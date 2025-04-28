@@ -1,4 +1,5 @@
 import WheelSlice from "../models/wheelslice.model.js";
+import SpinResult from "../models/SpinResult.model.js";
 
 export const createSlice = async (req, res) => {
     try {
@@ -83,6 +84,12 @@ export const spinWheel = async (req, res) => {
         const randomIndex = Math.floor(Math.random() * weightedSlices.length);
         const selectedSlice = weightedSlices[randomIndex];
 
+        const idSelectedSlice = selectedSlice._id.toString(); // Convert ObjectId to string
+        
+        // Save the result to the database
+        const spinResult = new SpinResult({ slice: idSelectedSlice });
+        await spinResult.save();
+        
         res.status(200).json({
             success: true,
             data: selectedSlice,
