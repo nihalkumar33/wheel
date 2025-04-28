@@ -36,6 +36,7 @@ export const getAllSlice = async (req, res) => {
         count: slices.length,
         data: slices,
       });
+      
     } catch (error) {
       console.error('Error fetching slices:', error);
       res.status(500).json({ success: false, message: 'Server Error' });
@@ -57,4 +58,40 @@ export const deleteSlice = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };
+
+export const spinWheel = async (req, res) => {
+    try {
+        const slices = await WheelSlice.find();
+
+        // Build an array of weighted slices
+        const weightedSlices = [];
+
+        slices.forEach(slice => {
+            // Push the slice multiple times based on its probability
+            const count = Math.floor(slice.probability * 100);
+
+            for (let i = 0; i < count; i++) {
+                weightedSlices.push(slice);
+            }
+        });
+
+        if (weightedSlices.length === 0) {
+            return res.status(404).json({ success: false, message: "No slices available to spin" });
+        }
+
+        // Pick a random slice
+        const randomIndex = Math.floor(Math.random() * weightedSlices.length);
+        const selectedSlice = weightedSlices[randomIndex];
+
+        res.status(200).json({
+            success: true,
+            data: selectedSlice,
+        });
+
+    } catch (error) {
+        console.error("Error spinning wheel:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+};
+
 
