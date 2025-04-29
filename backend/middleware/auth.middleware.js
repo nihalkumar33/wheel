@@ -1,26 +1,23 @@
 import jwt from "jsonwebtoken";
 
 export const isLogged = async (req, res, next) => {
-    //get token from cookie
-    //verify token
-    //if token is valid, get user from token 
-    try{
+    try {
         console.log("req.cookies", req.cookies);
         const token = req.cookies.token || "";
 
         console.log(token ? "Token Found: Yes" : "Token Found: No");
 
-        if(!token){
+        if (!token) {
             return res.status(401).json({
                 success: false,
                 message: "Unauthorized access"
             });
         }
-    const decoded_token = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("decoded_token", decoded_token);
+        const decoded_token = jwt.verify(token, process.env.JWT_SECRET);
+        console.log("decoded_token", decoded_token);
 
-    req.user = decoded_token;
-    }catch(error){
+        req.user = decoded_token;
+    } catch (error) {
         console.error("middleware error", error);
         return res.status(401).json({
             success: false,
@@ -30,3 +27,19 @@ export const isLogged = async (req, res, next) => {
     }
     next();
 };
+
+export const authorizeRoles = (...allowedRoles) => {
+    return (req, res, next) => {
+        const userRole = req.user.role;
+
+        if (!allowedRoles.includes(userRole)) {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied: insufficient permissions"
+            });
+        }
+
+        next();
+    };
+};
+

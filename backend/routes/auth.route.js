@@ -11,7 +11,6 @@ router.get("/logout",isLogged, logout);
 
 // router.get("/verify/:token", verifyUser);
 // router.put("/updateProfile", isLogged,updateProfile);
-
 // router.post("/forgotPassword", forgotPassword);
 // router.post("/resetPassword/:resetToken", resetPassword);
 
