@@ -7,6 +7,11 @@ const spinResultSchema = new mongoose.Schema(
       ref: "WheelSlice",
       required: true,
     },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
   },
   {
     timestamps: true,

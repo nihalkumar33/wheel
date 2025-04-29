@@ -67,7 +67,11 @@ export const spinWheel = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        error: "USER_NOT_FOUND",
+        message: 'User not found',
+      });
     }
 
     const now = new Date();
@@ -76,17 +80,16 @@ export const spinWheel = async (req, res) => {
       const timeLeft = user.nextSpinTime - now;
       return res.status(403).json({
         success: false,
+        error: "SPIN_COOLDOWN",
         message: "Spin not allowed yet",
-        timeLeft, // ms remaining
+        timeLeft,
         nextSpinTime: user.nextSpinTime,
       });
     }
 
     const slices = await WheelSlice.find();
 
-    // Build an array of weighted slices
     const weightedSlices = [];
-
     slices.forEach(slice => {
       const count = Math.floor(slice.probability * 100);
       for (let i = 0; i < count; i++) {
@@ -95,31 +98,46 @@ export const spinWheel = async (req, res) => {
     });
 
     if (weightedSlices.length === 0) {
-      return res.status(404).json({ success: false, message: "No slices available to spin" });
+      return res.status(404).json({
+        success: false,
+        error: "NO_SLICES",
+        message: "No slices available to spin",
+      });
     }
 
-    // Pick a random slice
     const randomIndex = Math.floor(Math.random() * weightedSlices.length);
     const selectedSlice = weightedSlices[randomIndex];
 
-    const idSelectedSlice = selectedSlice._id.toString();
+    // Create result
+    const spinResult = await SpinResult.create({
+      slice: selectedSlice._id,
+      user: user._id,
+    });
 
-    // Save spin result
-    const spinResult = new SpinResult({ slice: idSelectedSlice, user: user._id });
-    await spinResult.save();
-
-    // Set next allowed spin time (e.g., 24h later)
-    user.nextSpinTime = new Date(now.getTime() + 1 * 60 * 1000); // or 1 min for testing
+    // Update user's next spin time
+    user.nextSpinTime = new Date(now.getTime() + 1 * 60 * 1000);
     await user.save();
+
+    // Populate user and slice details before sending response
+    const populatedResult = await SpinResult.findById(spinResult._id)
+      .populate({
+        path: 'user',
+        select: 'name email',
+      })
+      .populate('slice');
 
     res.status(200).json({
       success: true,
-      data: selectedSlice,
+      data: populatedResult,
       nextSpinTime: user.nextSpinTime,
     });
 
   } catch (error) {
     console.error("Error spinning wheel:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({
+      success: false,
+      error: "SERVER_ERROR",
+      message: "Something went wrong while processing the spin.",
+    });
   }
 };
