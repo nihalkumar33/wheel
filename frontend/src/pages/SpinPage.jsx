@@ -51,7 +51,6 @@ export default function SpinPage() {
     }
   };
 
-
   if (loading) return <Typography>Loading...</Typography>;
 
   return (
