@@ -1,19 +1,22 @@
-import { useState } from 'react';
-import { spinWheel } from "../services/WheelService.js"
+
+import { Button } from '@mui/material';
 
 export default function SpinButton() {
-  const [result, setResult] = useState(null);
-
-  const handleSpin = async () => {
-    const res = await spinWheel();
-    console.log(res.data);
-    setResult(res.data.data);
+  const handleSpin = () => {
+    alert("🎉 Spinning the wheel!");
+    // You can replace this with your actual logic later
   };
 
   return (
-    <div>
-      <button onClick={handleSpin}>Spin Wheel</button>
-      {result && <p>🎉 You got: {result.text}</p>}
-    </div>
+    <Button
+      variant="contained"
+      color="secondary"
+      size="large"
+      onClick={handleSpin}
+      sx={{ borderRadius: '50px', px: 4, py: 1.5 }}
+    >
+      Spin Now
+    </Button>
   );
 }
+

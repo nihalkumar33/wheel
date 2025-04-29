@@ -4,7 +4,18 @@ const API = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001/api/wheel',
 });
 
-export const getAllSlices = () => API.get('/');
+
 export const createSlice = (data) => API.post('/', data);
 export const deleteSlice = (id) => API.delete(`/${id}`);
 export const spinWheel = () => API.get('/spin');
+
+export const getAllSlices = async () => {
+  try {
+    const res = await API.get('/'); 
+    return res.data.data; 
+  } catch (err) {
+    console.error('Failed to fetch slices:', err);
+    return [];
+  }
+};
+
