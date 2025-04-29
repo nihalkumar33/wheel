@@ -25,7 +25,11 @@ const userSchema = new mongoose.Schema({
     resetPasswordExpire: {
         type: Date,
         default: Date.now() +  600000 
-    }
+    },
+    nextSpinTime: {
+        type: Date,
+        default: () => new Date()
+      },
 },{
     timestamps: true
 })

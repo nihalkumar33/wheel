@@ -1,5 +1,7 @@
 import WheelSlice from "../models/wheelslice.model.js";
 import SpinResult from "../models/SpinResult.model.js";
+import User from '../models/User.model.js';
+
 
 export const createSlice = async (req, res) => {
   try {
@@ -13,8 +15,6 @@ export const createSlice = async (req, res) => {
     });
 
     console.log('New slice created:', newSlice);
-
-    // await newSlice.save();
 
     res.status(201).json({
       success: true,
@@ -60,17 +60,35 @@ export const deleteSlice = async (req, res) => {
   }
 };
 
+
 export const spinWheel = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const now = new Date();
+
+    if (user.nextSpinTime && user.nextSpinTime > now) {
+      const timeLeft = user.nextSpinTime - now;
+      return res.status(403).json({
+        success: false,
+        message: "Spin not allowed yet",
+        timeLeft, // ms remaining
+        nextSpinTime: user.nextSpinTime,
+      });
+    }
+
     const slices = await WheelSlice.find();
 
     // Build an array of weighted slices
     const weightedSlices = [];
 
     slices.forEach(slice => {
-      // Push the slice multiple times based on its probability
       const count = Math.floor(slice.probability * 100);
-
       for (let i = 0; i < count; i++) {
         weightedSlices.push(slice);
       }
@@ -84,17 +102,20 @@ export const spinWheel = async (req, res) => {
     const randomIndex = Math.floor(Math.random() * weightedSlices.length);
     const selectedSlice = weightedSlices[randomIndex];
 
-    const idSelectedSlice = selectedSlice._id.toString(); // Convert ObjectId to string
+    const idSelectedSlice = selectedSlice._id.toString();
 
-    // Save the result to the database
-    const spinResult = new SpinResult({ slice: idSelectedSlice });
+    // Save spin result
+    const spinResult = new SpinResult({ slice: idSelectedSlice, user: user._id });
     await spinResult.save();
 
-    console.log("array: ", weightedSlices);
+    // Set next allowed spin time (e.g., 24h later)
+    user.nextSpinTime = new Date(now.getTime() + 1 * 60 * 1000); // or 1 min for testing
+    await user.save();
 
     res.status(200).json({
       success: true,
       data: selectedSlice,
+      nextSpinTime: user.nextSpinTime,
     });
 
   } catch (error) {
@@ -102,5 +123,3 @@ export const spinWheel = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
-

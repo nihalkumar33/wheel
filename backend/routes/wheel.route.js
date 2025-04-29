@@ -8,7 +8,7 @@ const router = express.Router();
 
 // Admin-only routes
 router.post("/", isLogged, authorizeRoles("admin"), createSlice);
-router.get("/", isLogged, authorizeRoles("admin"), getAllSlice);
+router.get("/", isLogged, authorizeRoles("user"), getAllSlice);
 router.delete("/:id", isLogged, authorizeRoles("admin"), deleteSlice);
 
 // Customer-only route
