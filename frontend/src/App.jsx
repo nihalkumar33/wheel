@@ -5,7 +5,7 @@ import SpinPage from './pages/SpinPage';
 import AddSlicePage from './pages/AddSlicePage';
 import SliceListPage from './pages/SliceListPage';
 import PrivateRoute from './auth/PrivateRoute';
-
+import Layout from "./components/Layout"; 
 export default function App() {
   return (
     <Routes>
@@ -13,12 +13,14 @@ export default function App() {
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Protected Routes */}
+      {/* Protected Routes with Layout */}
       <Route
         path="/spin"
         element={
           <PrivateRoute allowedRoles={['user']}>
-            <SpinPage />
+            <Layout>
+              <SpinPage />
+            </Layout>
           </PrivateRoute>
         }
       />
@@ -26,7 +28,9 @@ export default function App() {
         path="/add-slice"
         element={
           <PrivateRoute allowedRoles={['admin']}>
-            <AddSlicePage />
+            <Layout>
+              <AddSlicePage />
+            </Layout>
           </PrivateRoute>
         }
       />
@@ -34,7 +38,9 @@ export default function App() {
         path="/slice-list"
         element={
           <PrivateRoute allowedRoles={['admin']}>
-            <SliceListPage />
+            <Layout>
+              <SliceListPage />
+            </Layout>
           </PrivateRoute>
         }
       />

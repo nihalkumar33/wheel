@@ -6,9 +6,10 @@ import { authorizeRoles } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
+router.get("/", isLogged, getAllSlice);
+
 // Admin-only routes
 router.post("/", isLogged, authorizeRoles("admin"), createSlice);
-router.get("/", isLogged, authorizeRoles("user"), getAllSlice);
 router.delete("/:id", isLogged, authorizeRoles("admin"), deleteSlice);
 
 // Customer-only route

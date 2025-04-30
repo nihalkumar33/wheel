@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await axios.get("/logout");
     setUser(null);
-    navigate("/login");
+    navigate("/");
   };
 
   useEffect(() => {
