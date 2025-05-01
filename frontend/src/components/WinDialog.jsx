@@ -33,28 +33,49 @@ const WinDialog = ({ open, onClose, winnerName }) => {
                 style: {
                     borderRadius: 20,
                     padding: 20,
-                    background: "white",
-                    boxShadow: "0px 10px 30px rgba(0,0,0,0.2)",
+                    background: "radial-gradient(circle, #2c1b00, #000)",
+                    boxShadow: "0 0 20px gold",
+                    border: "2px solid gold",
                 },
             }}
         >
             <DialogTitle
-                sx={{ textAlign: "center", pb: 0, fontWeight: "bold", fontSize: "1.8rem" }}
+                sx={{
+                    textAlign: "center",
+                    pb: 0,
+                    fontWeight: "bold",
+                    fontSize: "2rem",
+                    color: "gold",
+                    textShadow: "0 0 10px gold",
+                }}
             >
                 <CelebrationIcon
-                    color="success"
-                    sx={{ fontSize: 40, mr: 1, verticalAlign: "middle" }}
+                    sx={{
+                        fontSize: 50,
+                        mb: "-5px",
+                        mr: 1,
+                        color: "gold",
+                        textShadow: "0 0 10px gold",
+                    }}
                 />
                 You Won!
             </DialogTitle>
 
-            <DialogContent sx={{ textAlign: "center" }}>
+            <DialogContent sx={{ textAlign: "center", color: "white" }}>
                 <Box display="flex" flexDirection="column" alignItems="center" mt={2}>
-                    <CheckCircleOutlineIcon sx={{ color: "#4caf50", fontSize: 60, mb: 1 }} />
-                    <Typography variant="h5" fontWeight="bold" sx={{ textTransform: "capitalize" }}>
+                    <CheckCircleOutlineIcon sx={{ color: "limegreen", fontSize: 70, mb: 1 }} />
+                    <Typography
+                        variant="h4"
+                        fontWeight="bold"
+                        sx={{
+                            textTransform: "capitalize",
+                            color: "gold",
+                            textShadow: "0 0 10px gold",
+                        }}
+                    >
                         {winnerName}
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography variant="body1" sx={{ mt: 1 }}>
                         Congratulations on your lucky spin!
                     </Typography>
                 </Box>
@@ -63,7 +84,6 @@ const WinDialog = ({ open, onClose, winnerName }) => {
             <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
                 <Button
                     variant="contained"
-                    color="primary"
                     onClick={onClose}
                     sx={{
                         borderRadius: "30px",
@@ -72,6 +92,12 @@ const WinDialog = ({ open, onClose, winnerName }) => {
                         textTransform: "none",
                         fontWeight: "bold",
                         fontSize: "1rem",
+                        background: "gold",
+                        color: "#000",
+                        boxShadow: "0 0 10px gold",
+                        "&:hover": {
+                            background: "#ffcc00",
+                        },
                     }}
                 >
                     Done

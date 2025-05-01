@@ -40,3 +40,24 @@
 .read-the-docs {
   color: #888;
 }
+
+.perspective-3d {
+  perspective: 1000px;
+}
+
+.wheel3d {
+  transform-style: preserve-3d;
+}
+
+.spin-animation {
+  animation: rotate3d 4s ease-out forwards;
+}
+
+@keyframes rotate3d {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(1440deg);
+  }
+}

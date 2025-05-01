@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getAllSlices, spinWheel } from '../services/WheelService';
 import { Wheel } from 'react-custom-roulette';
 import {
@@ -9,10 +9,11 @@ import {
   DialogContent,
   DialogActions
 } from '@mui/material';
-import ReactConfetti from 'react-confetti';
+import { motion } from 'framer-motion';
 import { useWindowSize } from '@react-hook/window-size';
 import WinDialog from '../components/WinDialog';
-
+import confetti from 'canvas-confetti';
+import '../styles/spin-theme.css';
 
 export default function SpinPage() {
   const [slices, setSlices] = useState([]);
@@ -25,15 +26,18 @@ export default function SpinPage() {
   const [nextSpinTime, setNextSpinTime] = useState(null);
   const [timeLeft, setTimeLeft] = useState('');
   const [width, height] = useWindowSize();
+  const [spinning, setSpinning] = useState(false);
+
+  const wheelRef = useRef(null);
 
   useEffect(() => {
     getAllSlices().then((data) => {
-      const colors = ['#FFDE59', '#FFB6C1', '#87CEEB', '#90EE90', '#FFD700', '#F0A500', '#E6E6FA'];
+      const colors = ['#FFD700', '#000000'];
       const wheelData = data.map((slice, index) => ({
         option: slice.text,
         style: {
-          backgroundColor: colors[index % colors.length],
-          textColor: 'black',
+          backgroundColor: colors[index % 2],
+          textColor: '#FFF700',
         }
       }));
       setSlices(wheelData);
@@ -74,6 +78,7 @@ export default function SpinPage() {
 
       setPrizeNumber(winningIndex);
       setMustSpin(true);
+      setSpinning(true);
     } catch (error) {
       if (
         error?.response?.status === 403 &&
@@ -89,53 +94,68 @@ export default function SpinPage() {
     }
   };
 
-  if (loading) return <Typography align="center" sx={{ mt: 10 }}>Loading Wheel...</Typography>;
+  const handleSpinEnd = () => {
+    setMustSpin(false);
+    setSpinning(false);
+    const prizeText = slices[prizeNumber].option;
+    setWonPrize(prizeText);
+    setDialogOpen(true);
+    confetti({ particleCount: 100, spread: 90, origin: { y: 0.6 } });
+  };
+
+  if (loading) return <Typography align="center" sx={{ mt: 10, fontFamily: 'Poppins, sans-serif' }}>Loading Wheel...</Typography>;
 
   return (
     <div
       className="h-screen w-screen flex items-center justify-center px-4"
       style={{
-        background: 'linear-gradient(to bottom right, #dbeafe, #c084fc)',
+        background: 'radial-gradient(circle at center, #facc15 0%, #b45309 40%, #000000 100%)',
+        fontFamily: 'Poppins, sans-serif',
       }}
     >
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md text-center">
-        <h2 className="text-2xl font-bold text-gray-700 mb-6">Try Your Luck!</h2>
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        className="bg-black/80 p-8 rounded-3xl shadow-[0_0_60px_rgba(255,215,0,0.4)] w-full max-w-md text-center border-[3px] border-yellow-500"
+      >
+        <h2 className="text-3xl font-black text-yellow-300 mb-6 tracking-widest royal-heading" style={{ letterSpacing: '1px' }}>
+          Spin & Win!
+        </h2>
 
         <div className="flex justify-center mb-6">
-          <Wheel
-            mustStartSpinning={mustSpin}
-            prizeNumber={prizeNumber}
-            data={slices}
-            onStopSpinning={() => {
-              setMustSpin(false);
-              const prizeText = slices[prizeNumber].option;
-              setWonPrize(prizeText);
-              setDialogOpen(true);
-            }}
-            backgroundColors={["#FFDD00", "#FFA500"]}
-            textColors={["#000000"]}
-          />
+          <div className={`wheel3d ${spinning ? 'spin-animation' : ''}`} style={{ transition: 'transform 4s ease-out' }}>
+            <Wheel
+              mustStartSpinning={mustSpin}
+              prizeNumber={prizeNumber}
+              data={slices}
+              onStopSpinning={handleSpinEnd}
+              backgroundColors={["#FFD700", "#000000"]}
+              textColors={["#FFF700"]}
+              outerBorderColor={"#FFD700"}
+              outerBorderWidth={10}
+              innerRadius={10}
+              radiusLineColor="#FFD700"
+              radiusLineWidth={2}
+            />
+          </div>
         </div>
 
         <button
           onClick={handleSpinClick}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition"
+          className="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 text-black font-bold py-3 rounded-xl transition button-glow"
+          style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '1px' }}
         >
           Spin Now
         </button>
-      </div>
+      </motion.div>
 
-      {dialogOpen && (
-        <>
-          <ReactConfetti width={width} height={height} numberOfPieces={300} />
-          <WinDialog
-            open={dialogOpen}
-            onClose={() => setDialogOpen(false)}
-            winnerName={wonPrize}
-          />
-        </>
-      )}
-
+      <WinDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        winnerName={wonPrize}
+        winnerNameStyle={{ fontFamily: 'Playfair Display, serif', fontSize: '2rem', color: 'gold', textShadow: '0 0 10px gold', letterSpacing: '1px' }}
+      />
 
       <Dialog
         open={cooldownDialogOpen}
@@ -144,28 +164,29 @@ export default function SpinPage() {
           sx: {
             borderRadius: 4,
             p: 3,
-            backgroundColor: '#fff7f7',
-            boxShadow: '0px 8px 24px rgba(0,0,0,0.2)',
+            backgroundColor: '#111827',
+            border: '2px solid #FFD700',
+            boxShadow: '0px 8px 32px rgba(255,215,0,0.2)',
             minWidth: '300px',
             textAlign: 'center',
+            fontFamily: 'Poppins, sans-serif',
           }
         }}
       >
-        <DialogTitle sx={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#dc2626' }}>
-          ⏳ Please wait a little longer
+        <DialogTitle sx={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#FFD700', fontFamily: 'Playfair Display, serif' }}>
+          ⏳ Hold on!
         </DialogTitle>
 
         <DialogContent>
-          <Typography sx={{ mt: 1, color: '#4b5563' }}>
-            You've recently spun the wheel. To keep things fair for everyone, there's a short waiting period before your next spin.
+          <Typography sx={{ mt: 1, color: '#e5e7eb', fontFamily: 'Poppins, sans-serif' }}>
+            You’ve spun recently. Please wait a bit before trying again!
           </Typography>
-
           {nextSpinTime && (
             <Typography
               variant="h6"
-              sx={{ mt: 3, fontWeight: 600, color: '#1f2937' }}
+              sx={{ mt: 3, fontWeight: 600, color: '#F87171', fontFamily: 'Poppins, sans-serif' }}
             >
-              Time remaining: <span style={{ color: '#dc2626' }}>{timeLeft}</span>
+              Time remaining: <span>{timeLeft}</span>
             </Typography>
           )}
         </DialogContent>
@@ -176,21 +197,22 @@ export default function SpinPage() {
             onClick={() => setCooldownDialogOpen(false)}
             sx={{
               mt: 2,
-              backgroundColor: '#ef4444',
-              color: '#fff',
+              backgroundColor: '#facc15',
+              color: '#000',
               fontWeight: 600,
               borderRadius: 2,
               textTransform: 'none',
+              letterSpacing: '1px',
+              fontFamily: 'Poppins, sans-serif',
               '&:hover': {
-                backgroundColor: '#dc2626',
+                backgroundColor: '#eab308',
               }
             }}
           >
-            Okay, got it!
+            Okay!
           </Button>
         </DialogActions>
       </Dialog>
-
     </div>
   );
 }
